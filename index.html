@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#1f3354"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="寒假值班"><title>寒假值班請假登記</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet"><style>
+
+/* VOICE: calm, orderly, school-office professional with an aesthetic-education finish
+   IDEA: the printed duty roster pinned in the office — a ruled ledger of names × dates
+   PICTURE: the roster grid itself, coloured stamps per person per day, coverage row per centre
+   COLOUR and TYPE: white paper, ink-blue #1f3354 band, vermilion #c8452f for gaps & 春節; Noto Serif TC titles + Noto Sans TC
+   LAYOUT: title band with period strip, tabs, brush toolbar, scrolling ledger with sticky names */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#13171e);--ink:light-dark(#1b2230,#e8ebf0);--mute:light-dark(#69707d,#9aa3b2);--line:light-dark(#e3e5ea,#2a313d);--soft:light-dark(#f4f5f7,#1b212b);--band:light-dark(#1f3354,#16253f);--red:light-dark(#c8452f,#ff7a63);--prep:light-dark(#fbf1dc,#3a2f18);--prepink:light-dark(#8a5d0c,#f0c56b);
+--d-bg:light-dark(#1f3354,#6f8fc4);--d-fg:light-dark(#fff,#0f1622);--a-bg:light-dark(#f6d3c8,#5a2a1e);--a-fg:light-dark(#8a2e1c,#ffc4b3);--p-bg:light-dark(#e1dbf3,#352a5c);--p-fg:light-dark(#4b3a87,#d3c8ff);--s-bg:light-dark(#f7dde6,#55243a);--s-fg:light-dark(#8c2f55,#ffbdd6);--o-bg:light-dark(#d6ebe5,#1d4639);--o-fg:light-dark(#23614f,#a5e6d1);--c-bg:light-dark(#efe5c3,#4a3d12);--c-fg:light-dark(#6b5414,#f2dc8e)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Noto Sans TC",system-ui,sans-serif;overflow-x:clip}
+.band{padding:clamp(22px,3.5vw,48px) max(5vw,16px)}
+.top{background:var(--band);color:#fff}
+.top h1{font:700 clamp(28px,4.4vw,44px)/1.1 "Noto Serif TC",serif;margin:0 0 6px;text-wrap:balance;letter-spacing:.02em}
+.top p{margin:0;color:#c9d3e6;font-size:15px}
+.strip{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:20px;font-size:14px}
+.strip span{display:flex;align-items:center;gap:8px;white-space:nowrap}
+.strip i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.status{margin-top:18px;font-size:15px;font-weight:500;padding:10px 14px;border-radius:8px;background:rgba(255,255,255,.09);display:inline-block}
+.status.bad b{color:#ffb2a3}
+.wrap{max-width:1240px;margin:0 auto}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px;overflow-x:auto}
+.tabs button{border:0;background:none;color:var(--mute);font:500 16px "Noto Sans TC",sans-serif;padding:12px 16px;min-height:44px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+.tabs button[aria-selected=true]{color:var(--ink);border-color:var(--band)}
+:root[data-theme=dark] .tabs button[aria-selected=true]{border-color:#6f8fc4}
+button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.tool{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin-bottom:14px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button,.btn{font:500 15px "Noto Sans TC",sans-serif;min-height:40px;padding:6px 13px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;white-space:nowrap}
+.seg button[aria-pressed=true]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.seg .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:1px}
+.lbl{font-size:13px;color:var(--mute)}
+.hint{font-size:13px;color:var(--mute);margin:0 0 12px}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:separate;border-spacing:0;width:100%}
+.grid th,.grid td{border-bottom:1px solid var(--line);text-align:center;padding:0}
+.grid thead th{font-weight:500;padding:8px 2px;min-width:44px;background:var(--bg);position:sticky;top:0}
+.grid thead b{display:block;font-size:14px;white-space:nowrap}.grid thead i{display:block;font-style:normal;font-size:12px;color:var(--mute)}
+.grid .wk{border-left:1px solid var(--line)}
+.grid .nm{position:sticky;left:0;z-index:2;background:var(--bg);text-align:left;padding:6px 12px;min-width:118px;border-right:1px solid var(--line);white-space:nowrap}
+.grid .nm span{display:block;font-weight:500;font-size:15px}.grid .nm small{display:block;font-size:12px;color:var(--mute);line-height:1.2}
+.grid tr.ch th,.grid tr.ch td{background:var(--soft);font:700 14px "Noto Serif TC",serif;padding:8px 12px}
+.grid th.prep,.grid td.prep{background:var(--prep)}.grid th.prep i{color:var(--prepink);font-weight:700}
+.grid td.hol{background:repeating-linear-gradient(135deg,var(--soft) 0 4px,transparent 4px 8px)}.grid th.hol i{color:var(--red)}
+.c{width:100%;height:40px;border:0;background:transparent;font:700 15px "Noto Sans TC",sans-serif;cursor:pointer;color:var(--ink);padding:0;display:flex;align-items:center;justify-content:center}
+.c:hover{background:var(--soft)}
+.c span{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:28px;border-radius:6px;padding:0 4px}
+.c sup{font-size:10px;margin-left:1px;font-weight:500}
+.t-d{background:var(--d-bg);color:var(--d-fg)}.t-a{background:var(--a-bg);color:var(--a-fg)}.t-p{background:var(--p-bg);color:var(--p-fg)}.t-s{background:var(--s-bg);color:var(--s-fg)}.t-o{background:var(--o-bg);color:var(--o-fg)}.t-c{background:var(--c-bg);color:var(--c-fg)}
+.grid tr.cnt th,.grid tr.cnt td{font-size:12px;color:var(--mute);padding:6px 2px;border-bottom:2px solid var(--line)}
+.grid tr.cnt th{padding-left:12px}
+.grid td.miss{color:var(--red);font-weight:700}
+.list th,.list td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top;font-size:15px}
+.list thead th{font-size:13px;color:var(--mute);font-weight:500;background:var(--soft)}
+.list td.dt{white-space:nowrap;font-weight:700}.list td.dt small{display:block;font-weight:400;color:var(--mute);font-size:12px}
+.tag{display:inline-block;padding:1px 8px;border-radius:5px;margin:2px 4px 2px 0;font-size:14px;white-space:nowrap}
+.gap{color:var(--red);font-weight:700;font-size:14px}
+.num{text-align:right!important;font-variant-numeric:tabular-nums;white-space:nowrap}
+.list tr.prep td{background:var(--prep)}
+#bar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:9;background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 12px 10px 18px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;box-shadow:0 8px 28px rgba(0,0,0,.25);max-width:calc(100% - 24px)}
+#bar[hidden]{display:none}
+#bar .btn{background:transparent;color:var(--bg);border-color:rgba(127,127,127,.5)}
+#bar .btn.go{background:var(--red);border-color:var(--red);color:#fff}
+#toast{position:fixed;left:50%;top:16px;transform:translateX(-50%);background:var(--red);color:#fff;padding:10px 16px;border-radius:8px;font-size:15px;z-index:10;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90%}
+#toast.on{opacity:1}
+.foot{font-size:13px;color:var(--mute);padding-bottom:90px}
+textarea.cp{width:100%;height:120px;margin-top:10px;font:13px monospace}
+@media(max-width:600px){.list th,.list td{padding:8px;font-size:14px}.grid .nm{min-width:96px;padding:6px 8px}}
+@media(prefers-reduced-motion:reduce){#toast{transition:none}}
+
+.who{display:flex;flex-direction:column;gap:14px;margin-bottom:18px}
+.who h3{margin:0 0 6px;font:700 15px "Noto Serif TC",serif}
+.who .seg button{min-height:44px}
+.me{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;margin:0 0 14px;padding:12px 16px;background:var(--soft);border-radius:10px}
+.me b{font:700 22px "Noto Serif TC",serif}
+.days{display:flex;flex-direction:column}
+.wkh{font:700 14px "Noto Serif TC",serif;color:var(--mute);padding:18px 0 6px;border-bottom:1px solid var(--line)}
+.row{display:grid;grid-template-columns:76px minmax(0,1fr);gap:12px;padding:12px 0;border-bottom:1px solid var(--line);align-items:start}
+.row.prep{background:var(--prep);margin:0 -10px;padding:12px 10px}
+.row .dt{font:700 20px/1.1 "Noto Serif TC",serif;white-space:nowrap}.row .dt small{display:block;font:400 13px "Noto Sans TC",sans-serif;color:var(--mute);margin-top:4px}
+.row select{width:100%;max-width:340px;font:500 16px "Noto Sans TC",sans-serif;min-height:44px;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.row select.set{border-color:var(--ink);font-weight:700}
+.row .sub{font-size:13px;color:var(--mute);margin-top:6px}
+.row .sub .gap{font-size:13px}
+.sync{font-size:13px;color:#c9d3e6;margin-top:10px}
+.sync.err{color:#ffb2a3;font-weight:700}
+.dayhd{display:flex;align-items:center;gap:14px;margin-bottom:12px}.dayhd .btn{font-size:22px;width:48px;height:48px;padding:0}.dayhd .btn:disabled{opacity:.35}
+.big{font:700 clamp(26px,4vw,36px)/1.1 "Noto Serif TC",serif}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:14px}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.card h3{margin:0 0 10px;font:700 19px "Noto Serif TC",serif;padding-bottom:8px;border-bottom:2px solid var(--ink)}
+.card .sec{margin-top:10px}.card .lbl{display:flex;align-items:center;gap:6px;font-weight:500}
+.card .sw{width:10px;height:10px;border-radius:2px;display:inline-block}
+.card ul{list-style:none;margin:6px 0 0;padding:0}.card li{display:flex;gap:10px;align-items:baseline;padding:4px 0}.card li b{font-size:17px}.card li span{font-size:13px;color:var(--mute)}
+.card .gap,.card .none{margin:6px 0 0;font-size:14px}.card .none{color:var(--mute)}
+.tabs button{flex:none}
+.wk5{table-layout:fixed}.wk5 thead th{min-width:0}.wk5 .nm{width:112px}
+.wk5 td.wc{height:58px;padding:4px 2px;border-left:1px solid var(--line)}
+.wk5 td.wc small{display:block;font-size:12px;color:var(--mute);margin-top:2px}
+.wk5 .chip{display:inline-block;padding:3px 8px;border-radius:6px;font-size:14px;font-weight:700;white-space:nowrap}
+.wk5 .nil{color:var(--line);font-size:20px}
+.wk5 td.offh,.wk5 th.offh{background:var(--soft);color:var(--mute);font:400 12px "Noto Sans TC",sans-serif}
+.wk5 td.off{background:repeating-linear-gradient(135deg,var(--soft) 0 4px,transparent 4px 8px);border-left:1px solid var(--line)}
+.wk5 td.off.prep{background:var(--prep)}
+.wk5 th.today b{color:var(--red)}
+@media(max-width:600px){.wk5 .nm{width:84px}.wk5 .chip{padding:2px 5px;font-size:13px}}
+.demo{background:var(--prep);color:var(--prepink);padding:10px 14px;border-radius:8px;font-size:14px;margin-bottom:16px}
+</style></head><body>
+<header class="top band"><div class="wrap">
+<h1>寒假行政值班與請假登記</h1>
+<p>博嘉實小 · 教研中心 · 學輔中心 · 行政中心</p>
+<div class="strip">
+<span><i style="background:#fff"></i>寒假 12/31（四）– 2/10（三）</span>
+<span><i style="background:#f0c56b"></i>備課日禁休 1/27 – 1/29</span>
+<span><i style="background:#ff7a63"></i>春節 2/4 – 2/10</span>
+<span><i style="background:#9fd3c2"></i>開學 2/11（四）</span>
+</div>
+<div id="status" class="status"></div>
+<div id="sync" class="sync">連線中…</div>
+</div></header>
+<main class="band"><div class="wrap">
+<div id="demo" class="demo" hidden>試用模式：這個檔案直接在電腦上開啟，資料只存在這台裝置。放進 Google Apps Script 部署後就會連上試算表。</div>
+<nav class="tabs" role="tablist"><button data-tab="week" aria-selected="true">每週一覽</button><button data-tab="me" aria-selected="false">我的登記</button><button data-tab="grid" aria-selected="false">登記總表</button><button data-tab="day" aria-selected="false">每日值班表</button><button data-tab="sum" aria-selected="false">休假統計</button></nav>
+<section id="v-week"></section><section id="v-me" hidden></section><section id="v-grid" hidden></section><section id="v-day" hidden></section><section id="v-sum" hidden></section>
+<p class="foot">每次修改會立即存到學輔中心的 Google 試算表，並留下修改紀錄。</p>
+</div></main>
+<div id="toast" role="status"></div>
+<script>{
+// 試算表後端網址（Apps Script 網頁應用程式）
+const API='https://script.google.com/macros/s/AKfycbythZD3zGeHNMTyma-I-yquorOGRvFQldqOnWjYwxKFX9cs19obw5Tl42JcLyfgTKPv/exec';
+const GS=!!(window.google&&google.script&&google.script.run);
+const ONLINE=GS||!!API;
+const call=(fn,...a)=>new Promise((res,rej)=>google.script.run.withSuccessHandler(res).withFailureHandler(rej)[fn](...a));
+const $=s=>document.querySelector(s);
+const STAFF=[['e1','教研中心','張哲源','主任'],['e2','教研中心','王蕾雅','教學組長'],['e3','教研中心','黃芬怡','註資組長'],['e4','教研中心','賴沛君','美創組長'],['e5','教研中心','王綺','研究組長'],['e6','教研中心','黃郁凱','資訊組長'],['s1','學輔中心','朱俐嬛','主任'],['s2','學輔中心','楊穎琪','活動組長'],['s3','學輔中心','黃瑞廷','體衛組長'],['s4','學輔中心','張正柔','生教組長'],['s5','學輔中心','葉于寧','特輔組長'],['s6','學輔中心','林佳蓁','午餐幹事'],['s7','學輔中心','陳采潔','護理師'],['a1','行政中心','章宏智','主任'],['a2','行政中心','江柏毅','事務組長'],['a3','行政中心','張雅淳','出納組長']].map(([id,c,n,t])=>({id,c,n,t}));
+const CENTERS=[...new Set(STAFF.map(s=>s.c))];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const T={d:{n:'值班',s:'值'},a:{n:'休假',s:'休'}};
+const BYNAME=Object.fromEntries(Object.entries(T).map(([k,v])=>[v.n,k]));
+const LEAVE=['a'],PREP_OK=[];
+const PER={'':'全天',am:'上午',pm:'下午'},PBY={'上午':'am','下午':'pm'};
+const WD='日一二三四五六',pad=n=>String(n).padStart(2,'0');
+const COLS=[];
+for(let d=new Date(2026,11,31);d<=new Date(2027,1,10);d.setDate(d.getDate()+1)){
+  const m=d.getMonth()+1,dd=d.getDate(),w=d.getDay();
+  if(w==0||w==6||(m==2&&dd>=4))continue;
+  let kind='work';if(m==1&&dd==1)kind='hol';if(m==1&&dd>=27&&dd<=29)kind='prep';
+  COLS.push({k:d.getFullYear()+'-'+pad(m)+'-'+pad(dd),m,dd,w,kind,label:m+'/'+dd});
+}
+const WORK=COLS.filter(x=>x.kind=='work');
+const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+let rec={},me=ls.get('duty-me')||'',brush={t:'d',p:''},filter='all',busy=0,tab='week';
+
+// 值的格式：試算表中存「值班」「休假(上午)」，畫面內部用 {t,p}
+const parse=v=>{const m=String(v||'').match(/^(.+?)(?:\((上午|下午)\))?$/);if(!m||!BYNAME[m[1]])return{t:'',p:''};return{t:BYNAME[m[1]],p:PBY[m[2]]||''}};
+const human=(t,p)=>t?T[t].n+(p?'('+PER[p]+')':''):'';
+const getv=(k,id)=>(rec[k]||{})[id]||'';
+function cover(c,k){let am=0,pm=0;for(const s of STAFF){if(s.c!=c)continue;const{t,p}=parse(getv(k,s.id));if(t=='d'){if(p!='pm')am=1;if(p!='am')pm=1}}return am&&pm?'ok':am?'缺下':pm?'缺上':'缺'}
+const gapTxt=r=>r=='缺'?'尚無人值班':r=='缺上'?'上午無人值班':'下午無人值班';
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('on'),2600)}
+function syncMsg(txt,err){const e=$('#sync');e.textContent=txt;e.className='sync'+(err?' err':'')}
+const hhmm=()=>new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit',hour12:false});
+function stamp(v){const{t,p}=parse(v);if(!t)return'';return`<span class="t-${t}">${T[t].s}${p?`<sup>${p=='am'?'上':'下'}</sup>`:''}</span>`}
+function tag(s,v){const{t,p}=parse(v);return`<span class="tag t-${t}">${esc(s.n)}${t!='d'?' · '+T[t].n:''}${p?' · '+PER[p]:''}</span>`}
+
+// ---- 資料存取 ----
+async function load(quiet){
+  if(!ONLINE){try{rec=JSON.parse(ls.get('duty-demo')||'{}')}catch(e){rec={}}syncMsg('試用模式');render();return}
+  try{const j=GS?await call('getData'):await (await fetch(API+'?api=1&t='+Date.now())).json();if(!j||!j.ok)throw 0;if(!busy){rec=j.rec||{};render()}syncMsg('已同步 '+hhmm())}
+  catch(e){if(!quiet)syncMsg('無法連線到試算表，請檢查網路後重新整理',1)}
+}
+async function save(k,id,v){
+  (rec[k]=rec[k]||{})[id]=v;if(!v)delete rec[k][id];
+  render();
+  if(!ONLINE){ls.set('duty-demo',JSON.stringify(rec));toast('已儲存（試用模式）');return}
+  busy++;syncMsg('儲存中…');
+  try{const j=GS?await call('saveCell',k,id,v):await (await fetch(API,{method:'POST',body:JSON.stringify({k,id,v})})).json();if(!j||!j.ok)throw new Error(j.error||'');busy--;if(!busy){rec=j.rec||{};render()}syncMsg('已儲存 '+hhmm())}
+  catch(e){busy--;syncMsg('儲存失敗，請再試一次',1);toast('儲存失敗，請再試一次');load(true)}
+}
+function choose(k,id,t,p){
+  const d=COLS.find(x=>x.k==k);
+  if(t&&d.kind=='prep'&&!PREP_OK.includes(t)){toast('備課日禁休，全員到校');return false}
+  save(k,id,human(t,p));return true;
+}
+
+// ---- 每週一覽 ----
+const now=new Date(),TODAY=now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate());
+const keyOf=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const WEEKS=[];for(let m=new Date(2026,11,28);m<=new Date(2027,1,1);m.setDate(m.getDate()+7)){const w=[];for(let i=0;i<5;i++){const d=new Date(m);d.setDate(m.getDate()+i);const k=keyOf(d);const col=COLS.find(x=>x.k==k);w.push(col||{k,m:d.getMonth()+1,dd:d.getDate(),w:d.getDay(),label:(d.getMonth()+1)+'/'+d.getDate(),kind:k<COLS[0].k?'term':'cny'})}WEEKS.push(w)}
+let wi=Math.max(0,WEEKS.findIndex(w=>w[4].k>=TODAY));if(TODAY>WEEKS[WEEKS.length-1][4].k)wi=WEEKS.length-1;
+const OFFTXT={hol:'元旦',prep:'備課 全員到校',cny:'春節',term:'學期中'};
+function wcell(d,s){
+  if(d.kind!='work')return`<td class="off ${d.kind}"></td>`;
+  const{t,p}=parse(getv(d.k,s.id));
+  if(!t)return'<td class="wc"><span class="nil">·</span></td>';
+  return`<td class="wc"><span class="chip t-${t}">${T[t].n}</span>${p?`<small>${PER[p]}</small>`:''}</td>`;
+}
+function rWeek(){
+  const w=WEEKS[wi];
+  let h=`<div class="dayhd"><button class="btn" data-go="-1" ${wi?'':'disabled'} aria-label="前一週">‹</button><div><div class="big">${w[0].label} – ${w[4].label}</div><div class="lbl">寒假第 ${wi+1} 週，共 ${WEEKS.length} 週</div></div><button class="btn" data-go="1" ${wi<WEEKS.length-1?'':'disabled'} aria-label="下一週">›</button></div>
+  <p class="hint">想找某位同仁時，看他那一列：標「休假」的日子不在校，半天休假會註明上午或下午；「·」表示尚未登記。</p>
+  <div class="scroll"><table class="grid wk5"><thead><tr><th class="nm">姓名</th>${w.map(d=>`<th class="${d.kind=='work'?'':'offh'}${d.k==TODAY?' today':''}"><b>${d.label}</b><i>${d.k==TODAY?'今天':WD[d.w]}</i></th>`).join('')}</tr></thead><tbody>`;
+  for(const c of CENTERS){
+    h+=`<tr class="ch"><th class="nm">${esc(c)}</th>${w.map(d=>`<td class="${d.kind=='work'?'':'offh'}">${d.kind=='work'?'':esc(OFFTXT[d.kind]||'')}</td>`).join('')}</tr>`;
+    for(const s of STAFF.filter(s=>s.c==c))h+=`<tr><th class="nm"><span>${esc(s.n)}</span><small>${esc(s.t)}</small></th>${w.map(d=>wcell(d,s)).join('')}</tr>`;
+  }
+  $('#v-week').innerHTML=h+'</tbody></table></div>';
+}
+
+// ---- 畫面 ----
+function rStatus(){
+  let g=0;for(const d of WORK)for(const c of CENTERS)if(cover(c,d.k)!='ok')g++;
+  const el=$('#status');el.className='status'+(g?' bad':'');
+  el.innerHTML=g?`值班尚未排滿：<b>${g}</b> 個「中心 × 日」（共 ${WORK.length} 個值班日）`:`${WORK.length} 個值班日，三個中心值班皆已排定`;
+}
+function opts(d,v){
+  const{t,p}=parse(v),list=[['','未登記']];
+  for(const k of Object.keys(T)){if(d.kind=='prep'&&!PREP_OK.includes(k))continue;for(const q of Object.keys(PER))list.push([k+'|'+q,T[k].n+(q?'（'+PER[q]+'）':'（全天）')])}
+  const cur=t?t+'|'+p:'';
+  return list.map(([val,n])=>`<option value="${val}"${val==cur?' selected':''}>${n}</option>`).join('');
+}
+function rMe(){
+  let h='<div class="who">'+CENTERS.map(c=>`<div><h3>${esc(c)}</h3><div class="seg">${STAFF.filter(s=>s.c==c).map(s=>`<button data-me="${s.id}" aria-pressed="${me==s.id}">${esc(s.n)}</button>`).join('')}</div></div>`).join('')+'</div>';
+  const s=STAFF.find(x=>x.id==me);
+  if(!s){$('#v-me').innerHTML=h+'<p class="hint">請先點選你的名字。</p>';return}
+  const n={};Object.keys(T).forEach(k=>n[k]=0);
+  for(const d of COLS){const{t,p}=parse(getv(d.k,s.id));if(t)n[t]+=p?.5:1}
+  const lv=LEAVE.reduce((a,k)=>a+n[k],0);
+  h+=`<div class="me"><b>${esc(s.n)}</b><span>${esc(s.c)} · ${esc(s.t)}</span><span>值班 ${n.d} 天</span><span>休假 ${lv} 天</span></div><p class="hint">每一天選擇值班或休假（全天／上午／下午），選完立即儲存。備課日禁休。</p><div class="days">`;
+  let lastWeek=-1;
+  for(const d of COLS){
+    const wk=Math.floor((new Date(2027,d.m==12?-1:d.m-1,d.dd)-new Date(2026,11,28))/6048e5);
+    if(wk!=lastWeek){lastWeek=wk;h+=`<div class="wkh">${d.label} 這一週</div>`}
+    if(d.kind=='hol'){h+=`<div class="row"><div class="dt">${d.label}<small>週${WD[d.w]}</small></div><div><span class="hint">元旦，放假</span></div></div>`;continue}
+    if(d.kind=='prep'){h+=`<div class="row prep"><div class="dt">${d.label}<small>週${WD[d.w]}</small></div><div><b style="color:var(--prepink)">備課日禁休</b><div class="sub">全員到校</div></div></div>`;continue}
+    const v=getv(d.k,s.id),mates=STAFF.filter(x=>x.c==s.c&&parse(getv(d.k,x.id)).t=='d');
+    const r=d.kind=='work'?cover(s.c,d.k):'ok';
+    const sub=d.kind=='prep'?'備課日 · 全員到校':(mates.length?`${esc(s.c)}值班：${mates.map(x=>esc(x.n)+(parse(getv(d.k,x.id)).p?'('+PER[parse(getv(d.k,x.id)).p]+')':'')).join('、')}`:'')+(r!='ok'?` <span class="gap">${gapTxt(r)}</span>`:'');
+    h+=`<div class="row ${d.kind}"><div class="dt">${d.label}<small>週${WD[d.w]}</small></div><div><select data-k="${d.k}" class="${v?'set':''}" aria-label="${d.label} 登記">${opts(d,v)}</select><div class="sub">${sub}</div></div></div>`;
+  }
+  $('#v-me').innerHTML=h+'</div>';
+}
+function rGrid(){
+  const tl=[...Object.keys(T),'x'].map(t=>`<button data-t="${t}" aria-pressed="${brush.t==t}">${t=='x'?'清除':`<i class="sw t-${t}"></i>${T[t].n}`}</button>`).join('');
+  const pl=Object.entries(PER).map(([p,n])=>`<button data-p="${p}" aria-pressed="${brush.p==p}">${n}</button>`).join('');
+  const fl=[['all','全部'],...CENTERS.map(c=>[c,c])].map(([v,n])=>`<button data-f="${esc(v)}" aria-pressed="${filter==v}">${esc(n)}</button>`).join('');
+  let h=`<div class="tool"><div><div class="lbl">登記項目</div><div class="seg">${tl}</div></div><div><div class="lbl">時段</div><div class="seg">${pl}</div></div><div><div class="lbl">顯示</div><div class="seg">${fl}</div></div></div>
+  <p class="hint">選好項目與時段後點格子即登記並儲存；同一格再點一次取消。備課日禁休。</p>
+  <div class="scroll"><table class="grid"><thead><tr><th class="nm">姓名</th>${COLS.map(d=>`<th class="${d.kind}${d.w==1?' wk':''}"><b>${d.label}</b><i>${d.kind=='hol'?'元旦':d.kind=='prep'?'備課':WD[d.w]}</i></th>`).join('')}</tr></thead><tbody>`;
+  for(const c of CENTERS.filter(c=>filter=='all'||c==filter)){
+    h+=`<tr class="ch"><th class="nm">${esc(c)}</th><td colspan="${COLS.length}"></td></tr>`;
+    for(const s of STAFF.filter(s=>s.c==c)){
+      h+=`<tr><th class="nm"><span>${esc(s.n)}</span><small>${esc(s.t)}</small></th>`+COLS.map(d=>{const cl=d.kind+(d.w==1?' wk':'');if(d.kind=='hol')return`<td class="${cl}"></td>`;const v=getv(d.k,s.id);return`<td class="${cl}"><button class="c" data-k="${d.k}" data-id="${s.id}" aria-label="${esc(s.n)} ${d.label} ${esc(v||'未登記')}">${stamp(v)}</button></td>`}).join('')+'</tr>';
+    }
+    h+=`<tr class="cnt"><th class="nm">值班狀況</th>${COLS.map(d=>{const w=d.w==1?' wk':'';if(d.kind!='work')return`<td class="${d.kind}${w}"></td>`;const r=cover(c,d.k);return`<td class="${r=='ok'?'':'miss'}${w}">${r=='ok'?'✓':r}</td>`}).join('')}</tr>`;
+  }
+  h+=`</tbody></table></div><div class="tool" style="margin-top:14px"><button class="btn" id="bCopy">複製總表（可貼到 Excel）</button></div><div id="cpBox"></div>`;
+  const sc=document.querySelector('#v-grid .scroll'),sx=sc?sc.scrollLeft:0;
+  $('#v-grid').innerHTML=h;document.querySelector('#v-grid .scroll').scrollLeft=sx;
+}
+function rDay(){
+  let h=`<p class="hint">各中心每日值班與休假人員，紅字為尚無人值班的時段。</p><div class="scroll"><table class="list"><thead><tr><th>日期</th>${CENTERS.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>`;
+  for(const d of COLS.filter(x=>x.kind!='hol')){
+    h+=`<tr class="${d.kind}"><td class="dt">${d.label}（${WD[d.w]}）${d.kind=='prep'?'<small>備課日 · 全員到校</small>':''}</td>`+CENTERS.map(c=>{
+      const ss=STAFF.filter(s=>s.c==c);
+      const du=ss.filter(s=>parse(getv(d.k,s.id)).t=='d').map(s=>tag(s,getv(d.k,s.id))).join('');
+      const lv=ss.filter(s=>LEAVE.includes(parse(getv(d.k,s.id)).t)).map(s=>tag(s,getv(d.k,s.id))).join('');
+      const r=d.kind=='work'?cover(c,d.k):'ok';
+      return`<td>${du}${r!='ok'?`<span class="gap">${gapTxt(r)}</span>`:''}${lv?`<div style="margin-top:4px">${lv}</div>`:''}</td>`}).join('')+'</tr>';
+  }
+  $('#v-day').innerHTML=h+'</tbody></table></div>';
+}
+function rSum(){
+  const keys=Object.keys(T);
+  let h=`<p class="hint">以天數計，半天以 0.5 天計算。</p><div class="scroll"><table class="list"><thead><tr><th>姓名</th><th>中心 · 職稱</th>${keys.map(k=>`<th class="num">${T[k].n}</th>`).join('')}</tr></thead><tbody>`;
+  for(const s of STAFF){
+    const n={};keys.forEach(k=>n[k]=0);
+    for(const d of COLS){const{t,p}=parse(getv(d.k,s.id));if(t)n[t]+=p?.5:1}
+    const tot=LEAVE.reduce((a,k)=>a+n[k],0);
+    h+=`<tr><td><b>${esc(s.n)}</b></td><td>${esc(s.c)} · ${esc(s.t)}</td>${keys.map(k=>`<td class="num">${n[k]||'–'}</td>`).join('')}</tr>`;
+  }
+  $('#v-sum').innerHTML=h+'</tbody></table></div>';
+}
+function render(){rStatus();rWeek();rMe();rGrid();rDay();rSum()}
+function tsv(){
+  const rows=[['中心','姓名','職稱',...COLS.map(d=>d.label)]];
+  for(const s of STAFF)rows.push([s.c,s.n,s.t,...COLS.map(d=>d.kind=='hol'?'元旦':getv(d.k,s.id))]);
+  return rows.map(r=>r.join('\t')).join('\n');
+}
+
+// ---- 事件 ----
+document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;tab=b.dataset.tab;
+  document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x==b));
+  ['week','me','grid','day','sum'].forEach(t=>$('#v-'+t).hidden=t!=tab)});
+$('#v-week').addEventListener('click',e=>{const b=e.target.closest('button[data-go]');if(!b)return;const n=wi+(+b.dataset.go);if(WEEKS[n]){wi=n;rWeek()}});
+$('#v-me').addEventListener('click',e=>{const b=e.target.closest('button[data-me]');if(!b)return;me=b.dataset.me;ls.set('duty-me',me);rMe()});
+$('#v-me').addEventListener('change',e=>{const sel=e.target.closest('select');if(!sel)return;const[t,p]=(sel.value||'|').split('|');if(!choose(sel.dataset.k,me,t,p||''))rMe()});
+$('#v-grid').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.t){brush.t=b.dataset.t;if(brush.t=='x')brush.p='';rGrid();return}
+  if(b.dataset.p!==undefined){brush.p=b.dataset.p;rGrid();return}
+  if(b.dataset.f){filter=b.dataset.f;rGrid();return}
+  if(b.id=='bCopy'){const txt=tsv();navigator.clipboard.writeText(txt).then(()=>toast('已複製，可直接貼到 Excel')).catch(()=>{$('#cpBox').innerHTML='<textarea class="cp" readonly></textarea>';const ta=$('#cpBox textarea');ta.value=txt;ta.select()});return}
+  if(b.dataset.k){const k=b.dataset.k,id=b.dataset.id;
+    if(brush.t=='x'){save(k,id,'');return}
+    const cur=parse(getv(k,id));
+    if(cur.t==brush.t&&cur.p==brush.p)save(k,id,'');else choose(k,id,brush.t,brush.p)}
+});
+$('#demo').hidden=ONLINE;
+render();load();
+setInterval(()=>{if(!document.hidden)load(true)},60000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)load(true)});
+}</script></body></html>
