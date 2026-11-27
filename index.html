@@ -71,6 +71,8 @@ textarea.cp{width:100%;height:120px;margin-top:10px;font:13px monospace}
 @media(prefers-reduced-motion:reduce){#toast{transition:none}}
 
 .who{display:flex;flex-direction:column;gap:14px;margin-bottom:18px}
+.pick{width:100%;max-width:520px;font:500 17px "Noto Sans TC",sans-serif;min-height:48px;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}.pick.set{border-color:var(--ink);font-weight:700}
+.wk5 tr.hl th,.wk5 tr.hl td{background:light-dark(#eef2f9,#1d2a40)}.wk5 tr.hl th span{color:var(--red)}
 .who h3{margin:0 0 6px;font:700 15px "Noto Serif TC",serif}
 .who .seg button{min-height:44px}
 .me{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;margin:0 0 14px;padding:12px 16px;background:var(--soft);border-radius:10px}
@@ -122,6 +124,7 @@ textarea.cp{width:100%;height:120px;margin-top:10px;font:13px monospace}
 </div></header>
 <main class="band"><div class="wrap">
 <div id="demo" class="demo" hidden>試用模式：這個檔案直接在電腦上開啟，資料只存在這台裝置。放進 Google Apps Script 部署後就會連上試算表。</div>
+<div class="who"><label class="lbl" for="meSel">登記人：要請假的人請先選擇自己的名字</label><select id="meSel" class="pick"></select></div>
 <nav class="tabs" role="tablist"><button data-tab="week" aria-selected="true">每週一覽</button><button data-tab="me" aria-selected="false">我的登記</button><button data-tab="grid" aria-selected="false">登記總表</button><button data-tab="day" aria-selected="false">每日值班表</button><button data-tab="sum" aria-selected="false">休假統計</button></nav>
 <section id="v-week"></section><section id="v-me" hidden></section><section id="v-grid" hidden></section><section id="v-day" hidden></section><section id="v-sum" hidden></section>
 <p class="foot">每次修改會立即存到學輔中心的 Google 試算表，並留下修改紀錄。</p>
@@ -156,14 +159,16 @@ let rec={},me=ls.get('duty-me')||'',brush={t:'d',p:''},filter='all',busy=0,tab='
 // 值的格式：試算表中存「值班」「休假(上午)」，畫面內部用 {t,p}
 const parse=v=>{const m=String(v||'').match(/^(.+?)(?:\((上午|下午)\))?$/);if(!m||!BYNAME[m[1]])return{t:'',p:''};return{t:BYNAME[m[1]],p:PBY[m[2]]||''}};
 const human=(t,p)=>t?T[t].n+(p?'('+PER[p]+')':''):'';
+const label=(t,p)=>!t?'':t=='a'?(p?PER[p]+'休':'休假（全天）'):'值班'+(p?'（'+PER[p]+'）':'（全天）');
+const short=(t,p)=>t=='a'?(p?PER[p]+'休':'休假'):'值班'+(p?'·'+PER[p]:'');
 const getv=(k,id)=>(rec[k]||{})[id]||'';
 function cover(c,k){let am=0,pm=0;for(const s of STAFF){if(s.c!=c)continue;const{t,p}=parse(getv(k,s.id));if(t=='d'){if(p!='pm')am=1;if(p!='am')pm=1}}return am&&pm?'ok':am?'缺下':pm?'缺上':'缺'}
 const gapTxt=r=>r=='缺'?'尚無人值班':r=='缺上'?'上午無人值班':'下午無人值班';
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('on'),2600)}
 function syncMsg(txt,err){const e=$('#sync');e.textContent=txt;e.className='sync'+(err?' err':'')}
 const hhmm=()=>new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit',hour12:false});
-function stamp(v){const{t,p}=parse(v);if(!t)return'';return`<span class="t-${t}">${T[t].s}${p?`<sup>${p=='am'?'上':'下'}</sup>`:''}</span>`}
-function tag(s,v){const{t,p}=parse(v);return`<span class="tag t-${t}">${esc(s.n)}${t!='d'?' · '+T[t].n:''}${p?' · '+PER[p]:''}</span>`}
+function stamp(v){const{t,p}=parse(v);if(!t)return'';if(t=='a'&&p)return`<span class="t-a">${p=='am'?'上休':'下休'}</span>`;return`<span class="t-${t}">${T[t].s}${p?`<sup>${p=='am'?'上':'下'}</sup>`:''}</span>`}
+function tag(s,v){const{t,p}=parse(v);return`<span class="tag t-${t}">${esc(s.n)}${t=='a'?' · '+short(t,p):p?' · '+PER[p]:''}</span>`}
 
 // ---- 資料存取 ----
 async function load(quiet){
@@ -195,16 +200,16 @@ function wcell(d,s){
   if(d.kind!='work')return`<td class="off ${d.kind}"></td>`;
   const{t,p}=parse(getv(d.k,s.id));
   if(!t)return'<td class="wc"><span class="nil">·</span></td>';
-  return`<td class="wc"><span class="chip t-${t}">${T[t].n}</span>${p?`<small>${PER[p]}</small>`:''}</td>`;
+  return`<td class="wc"><span class="chip t-${t}">${t=='a'?short(t,p):T[t].n}</span>${t=='d'&&p?`<small>${PER[p]}</small>`:''}</td>`;
 }
 function rWeek(){
   const w=WEEKS[wi];
   let h=`<div class="dayhd"><button class="btn" data-go="-1" ${wi?'':'disabled'} aria-label="前一週">‹</button><div><div class="big">${w[0].label} – ${w[4].label}</div><div class="lbl">寒假第 ${wi+1} 週，共 ${WEEKS.length} 週</div></div><button class="btn" data-go="1" ${wi<WEEKS.length-1?'':'disabled'} aria-label="下一週">›</button></div>
-  <p class="hint">想找某位同仁時，看他那一列：標「休假」的日子不在校，半天休假會註明上午或下午；「·」表示尚未登記。</p>
+  <p class="hint">想找某位同仁時，看他那一列：標「休假」的日子不在校，半天休假標示「上午休」或「下午休」；「·」表示尚未登記。</p>
   <div class="scroll"><table class="grid wk5"><thead><tr><th class="nm">姓名</th>${w.map(d=>`<th class="${d.kind=='work'?'':'offh'}${d.k==TODAY?' today':''}"><b>${d.label}</b><i>${d.k==TODAY?'今天':WD[d.w]}</i></th>`).join('')}</tr></thead><tbody>`;
   for(const c of CENTERS){
     h+=`<tr class="ch"><th class="nm">${esc(c)}</th>${w.map(d=>`<td class="${d.kind=='work'?'':'offh'}">${d.kind=='work'?'':esc(OFFTXT[d.kind]||'')}</td>`).join('')}</tr>`;
-    for(const s of STAFF.filter(s=>s.c==c))h+=`<tr><th class="nm"><span>${esc(s.n)}</span><small>${esc(s.t)}</small></th>${w.map(d=>wcell(d,s)).join('')}</tr>`;
+    for(const s of STAFF.filter(s=>s.c==c))h+=`<tr class="${s.id==me?'hl':''}"><th class="nm"><span>${esc(s.n)}</span><small>${esc(s.t)}</small></th>${w.map(d=>wcell(d,s)).join('')}</tr>`;
   }
   $('#v-week').innerHTML=h+'</tbody></table></div>';
 }
@@ -217,18 +222,18 @@ function rStatus(){
 }
 function opts(d,v){
   const{t,p}=parse(v),list=[['','未登記']];
-  for(const k of Object.keys(T)){if(d.kind=='prep'&&!PREP_OK.includes(k))continue;for(const q of Object.keys(PER))list.push([k+'|'+q,T[k].n+(q?'（'+PER[q]+'）':'（全天）')])}
+  for(const k of Object.keys(T)){if(d.kind=='prep'&&!PREP_OK.includes(k))continue;for(const q of Object.keys(PER))list.push([k+'|'+q,label(k,q)])}
   const cur=t?t+'|'+p:'';
   return list.map(([val,n])=>`<option value="${val}"${val==cur?' selected':''}>${n}</option>`).join('');
 }
 function rMe(){
-  let h='<div class="who">'+CENTERS.map(c=>`<div><h3>${esc(c)}</h3><div class="seg">${STAFF.filter(s=>s.c==c).map(s=>`<button data-me="${s.id}" aria-pressed="${me==s.id}">${esc(s.n)}</button>`).join('')}</div></div>`).join('')+'</div>';
+  let h='';
   const s=STAFF.find(x=>x.id==me);
-  if(!s){$('#v-me').innerHTML=h+'<p class="hint">請先點選你的名字。</p>';return}
+  if(!s){$('#v-me').innerHTML=h+'<p class="hint">請先在最上方的選單選擇你的名字，就能登記休假。</p>';return}
   const n={};Object.keys(T).forEach(k=>n[k]=0);
   for(const d of COLS){const{t,p}=parse(getv(d.k,s.id));if(t)n[t]+=p?.5:1}
   const lv=LEAVE.reduce((a,k)=>a+n[k],0);
-  h+=`<div class="me"><b>${esc(s.n)}</b><span>${esc(s.c)} · ${esc(s.t)}</span><span>值班 ${n.d} 天</span><span>休假 ${lv} 天</span></div><p class="hint">每一天選擇值班或休假（全天／上午／下午），選完立即儲存。備課日禁休。</p><div class="days">`;
+  h+=`<div class="me"><b>${esc(s.n)}</b><span>${esc(s.c)} · ${esc(s.t)}</span><span>值班 ${n.d} 天</span><span>休假 ${lv} 天</span></div><p class="hint">每一天選擇值班、休假（全天）、上午休或下午休，選完立即儲存。備課日禁休。</p><div class="days">`;
   let lastWeek=-1;
   for(const d of COLS){
     const wk=Math.floor((new Date(2027,d.m==12?-1:d.m-1,d.dd)-new Date(2026,11,28))/6048e5);
@@ -283,6 +288,11 @@ function rSum(){
   }
   $('#v-sum').innerHTML=h+'</tbody></table></div>';
 }
+function rWho(){
+  const sel=$('#meSel');
+  sel.innerHTML=`<option value="">全部同仁</option>${CENTERS.map(c=>`<optgroup label="${esc(c)}">${STAFF.filter(s=>s.c==c).map(s=>`<option value="${s.id}"${me==s.id?' selected':''}>${esc(s.n)}（${esc(s.t)}）</option>`).join('')}</optgroup>`).join('')}`;
+  sel.classList.toggle('set',!!me);
+}
 function render(){rStatus();rWeek();rMe();rGrid();rDay();rSum()}
 function tsv(){
   const rows=[['中心','姓名','職稱',...COLS.map(d=>d.label)]];
@@ -295,7 +305,6 @@ document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.cl
   document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x==b));
   ['week','me','grid','day','sum'].forEach(t=>$('#v-'+t).hidden=t!=tab)});
 $('#v-week').addEventListener('click',e=>{const b=e.target.closest('button[data-go]');if(!b)return;const n=wi+(+b.dataset.go);if(WEEKS[n]){wi=n;rWeek()}});
-$('#v-me').addEventListener('click',e=>{const b=e.target.closest('button[data-me]');if(!b)return;me=b.dataset.me;ls.set('duty-me',me);rMe()});
 $('#v-me').addEventListener('change',e=>{const sel=e.target.closest('select');if(!sel)return;const[t,p]=(sel.value||'|').split('|');if(!choose(sel.dataset.k,me,t,p||''))rMe()});
 $('#v-grid').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
@@ -308,6 +317,9 @@ $('#v-grid').addEventListener('click',e=>{
     const cur=parse(getv(k,id));
     if(cur.t==brush.t&&cur.p==brush.p)save(k,id,'');else choose(k,id,brush.t,brush.p)}
 });
+$('#meSel').addEventListener('change',e=>{me=e.target.value;ls.set('duty-me',me);rWho();rWeek();rMe();
+  if(me){const b=document.querySelector('.tabs button[data-tab="me"]');b.click()}});
+rWho();
 $('#demo').hidden=ONLINE;
 render();load();
 setInterval(()=>{if(!document.hidden)load(true)},60000);
